@@ -9,6 +9,8 @@ import { useEffect, useLayoutEffect } from 'react'
 // is created synchronously, otherwise a store update may occur before the
 // subscription is created and an inconsistent state may be observed
 
+// 希望尽可能快的响应state的变化
+// 如果在RN环境是没有window对象的
 export const useIsomorphicLayoutEffect =
   typeof window !== 'undefined' &&
   typeof window.document !== 'undefined' &&

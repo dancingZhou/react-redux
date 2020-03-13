@@ -14,9 +14,6 @@ export default function warning(message) {
     // This error was thrown as a convenience so that if you enable
     // "break on all exceptions" in your console,
     // it would pause the execution at this line.
-    // 控制台有 一出现就暂停的功能，为了适配这个，方便调试
     throw new Error(message)
-    /* eslint-disable no-empty */
-  } catch (e) {}
-  /* eslint-enable no-empty */
+  } catch (e) {} // eslint-disable-line no-empty
 }

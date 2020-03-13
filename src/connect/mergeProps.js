@@ -1,5 +1,9 @@
 import verifyPlainObject from '../utils/verifyPlainObject'
 
+// 通过connect的props有
+// mapStateToProps 的返回值 
+// mapDispatchToProps 的返回值
+// 父元素传进来的 ownProps
 export function defaultMergeProps(stateProps, dispatchProps, ownProps) {
   return { ...ownProps, ...stateProps, ...dispatchProps }
 }
