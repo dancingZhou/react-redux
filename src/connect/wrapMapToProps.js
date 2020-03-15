@@ -19,6 +19,10 @@ export function wrapMapToPropsConstant(getConstant) {
 // A length of one signals that mapToProps does not depend on props from the parent component.
 // A length of zero is assumed to mean mapToProps is getting args via arguments or ...args and
 // therefore not reporting its length accurately..
+
+// function mapStateToProps(state, ownProps) { }
+// 这里的mapStateToProps.length === 2 所以可以看出来是否需要ownProps这个参数
+// 还有一种方法就是显示定义dependsOneOwnProps这个属性为buulean值
 export function getDependsOnOwnProps(mapToProps) {
   return mapToProps.dependsOnOwnProps !== null &&
     mapToProps.dependsOnOwnProps !== undefined
@@ -40,7 +44,11 @@ export function getDependsOnOwnProps(mapToProps) {
 //
 export function wrapMapToPropsFunc(mapToProps, methodName) {
   return function initProxySelector(dispatch, { displayName }) {
+    // 这个代理主要处理两件事情
+    // 1 判断这个map函数是否依赖 ownProps
+    // 2 兼容map函数返回函数的情况
     const proxy = function mapToPropsProxy(stateOrDispatch, ownProps) {
+      // QEUSTION: 为什么要将依赖ownProps和不依赖ownProps区分开？
       return proxy.dependsOnOwnProps
         ? proxy.mapToProps(stateOrDispatch, ownProps)
         : proxy.mapToProps(stateOrDispatch)
@@ -49,6 +57,7 @@ export function wrapMapToPropsFunc(mapToProps, methodName) {
     // allow detectFactoryAndVerify to get ownProps
     proxy.dependsOnOwnProps = true
 
+    // proxy.mapToProps 的第一次执行和非第一次执行是不一样，第一次执行完成之后 proxy.mapToProps 就改变了
     proxy.mapToProps = function detectFactoryAndVerify(
       stateOrDispatch,
       ownProps
@@ -57,6 +66,8 @@ export function wrapMapToPropsFunc(mapToProps, methodName) {
       proxy.dependsOnOwnProps = getDependsOnOwnProps(mapToProps)
       let props = proxy(stateOrDispatch, ownProps)
 
+      // 这一步判断表示：function mapToState () {} 可以返回一个函数
+      // function mapToStateWrap() { return function mapToState(state, ownProps) {} }
       if (typeof props === 'function') {
         proxy.mapToProps = props
         proxy.dependsOnOwnProps = getDependsOnOwnProps(props)

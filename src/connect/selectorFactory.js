@@ -30,7 +30,9 @@ export function pureFinalPropsSelectorFactory(
   let mergedProps
 
   function handleFirstCall(firstState, firstOwnProps) {
+    // store里面的state
     state = firstState
+    // 父组件传给子组件的propse
     ownProps = firstOwnProps
     stateProps = mapStateToProps(state, ownProps)
     dispatchProps = mapDispatchToProps(dispatch, ownProps)
@@ -42,6 +44,7 @@ export function pureFinalPropsSelectorFactory(
   function handleNewPropsAndNewState() {
     stateProps = mapStateToProps(state, ownProps)
 
+    // 如果不依赖ownProps属性的更新其实和mapDispatch没有关系
     if (mapDispatchToProps.dependsOnOwnProps)
       dispatchProps = mapDispatchToProps(dispatch, ownProps)
 

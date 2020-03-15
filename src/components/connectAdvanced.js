@@ -18,9 +18,11 @@ const stringifyComponent = Comp => {
   }
 }
 
+// 这是整个connect的核心，只有它的调用才能引起Connect组件以及子组件的渲染
 function storeStateUpdatesReducer(state, action) {
   const [, updateCount] = state
-  return [action.payload, updateCount + 1]
+  // QUESTION: 为什么直接返回数组字面量不会持续更新
+  return [action.payload, updateCount]
 }
 
 function useIsomorphicLayoutEffectWithArgs(
@@ -271,6 +273,7 @@ export default function connectAdvanced(
     // that just executes the given callback immediately.
     const usePureOnlyMemo = pure ? useMemo : callback => callback()
 
+    // QUESTION: store 的来源不止有 context ，还有 props ？为什么会有 props ?
     function ConnectFunction(props) {
       const [propsContext, forwardedRef, wrapperProps] = useMemo(() => {
         // Distinguish between actual "data" props that were passed to the wrapper component,
@@ -280,6 +283,7 @@ export default function connectAdvanced(
         return [props.context, forwardedRef, wrapperProps]
       }, [props])
 
+      // 选择用propsContext还是用第二个参数中的context（全局单例context）
       const ContextToUse = useMemo(() => {
         // Users may optionally pass in a custom context instance to use instead of our ReactReduxContext.
         // Memoize the check that determines which context instance we should use.
@@ -462,11 +466,16 @@ export default function connectAdvanced(
     }
 
     // If we're in "pure" mode, ensure our wrapper component only re-renders when incoming props have changed.
+    
+    // QUESTION: React.memo() 这有啥用？每次都不还是新的？没有记忆作用
+    // ANWSER: useMemo才会每次返回新值，搞混了，这个和PrueComponent一个意思
     const Connect = pure ? React.memo(ConnectFunction) : ConnectFunction
 
     Connect.WrappedComponent = WrappedComponent
     Connect.displayName = displayName
 
+    // React.forwardRef 会将ref和props分开作为函数组件额第二个参数传入
+    // 这样就能跨组件，获取子组件的子组件的实例
     if (forwardRef) {
       const forwarded = React.forwardRef(function forwardConnectRef(
         props,
@@ -480,6 +489,7 @@ export default function connectAdvanced(
       return hoistStatics(forwarded, WrappedComponent)
     }
 
+    // 不仅要返回包裹的组件，还要复制整个被包裹组件的静态属性
     return hoistStatics(Connect, WrappedComponent)
   }
 }
