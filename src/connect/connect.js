@@ -55,6 +55,7 @@ export function createConnect({
   // function miss object
   mapDispatchToPropsFactories = defaultMapDispatchToPropsFactories,
   mergePropsFactories = defaultMergePropsFactories,
+  // selectorFactory 的调用会拿到 selector(nextState, nextOwnProps)
   selectorFactory = defaultSelectorFactory
 } = {}) {
   // connect 一共有四个参数，常用的有两个
@@ -84,7 +85,7 @@ export function createConnect({
     )
     // 相当于 mapDispatchToPropsFactories(mapDispatchToProps)
     // 这个返回值是 initProxySelector 这个函数
-    // initProxySelector(dispatch, { displayName })
+    // initProxySelector(dispatch, { displayName }) {return function proxyMapDispatchToProps() {}}
     // 这需要再执行两次才是真正调用 mapDispatchToProps
     const initMapDispatchToProps = match(
       mapDispatchToProps,

@@ -25,6 +25,7 @@ function storeStateUpdatesReducer(state, action) {
   return [action.payload, updateCount]
 }
 
+// 将effect的使用包装了一层
 function useIsomorphicLayoutEffectWithArgs(
   effectFunc,
   effectArgs,
@@ -48,12 +49,14 @@ function captureWrapperProps(
   renderIsScheduled.current = false
 
   // If the render was from a store update, clear out that reference and cascade the subscriber update
+  // 如果子元素来自store的props更新了，就发送消息
   if (childPropsFromStoreUpdate.current) {
     childPropsFromStoreUpdate.current = null
     notifyNestedSubs()
   }
 }
 
+// 订阅更新
 function subscribeUpdates(
   shouldHandleStateChanges,
   store,
@@ -274,6 +277,8 @@ export default function connectAdvanced(
     const usePureOnlyMemo = pure ? useMemo : callback => callback()
 
     // QUESTION: store 的来源不止有 context ，还有 props ？为什么会有 props ?
+    // QUESTION: 怎么获取wraped的props
+    // ANWSER: 下面的这个props就是wraped的props
     function ConnectFunction(props) {
       const [propsContext, forwardedRef, wrapperProps] = useMemo(() => {
         // Distinguish between actual "data" props that were passed to the wrapper component,
@@ -295,6 +300,7 @@ export default function connectAdvanced(
       }, [propsContext, Context])
 
       // Retrieve the store and ancestor subscription via context, if available
+      // 是一个数组 [store, subscription]
       const contextValue = useContext(ContextToUse)
 
       // The store _must_ exist as either a prop or in context.
@@ -323,17 +329,20 @@ export default function connectAdvanced(
       // Based on the previous check, one of these must be true
       const store = didStoreComeFromProps ? props.store : contextValue.store
 
+      // 这是真正的 mapToProps(state, ownProps) => props
       const childPropsSelector = useMemo(() => {
         // The child props selector needs the store reference as an input.
         // Re-create this selector whenever the store changes.
         return createChildSelector(store)
       }, [store])
 
+      // 这个subscription监听的是store的subscript 通俗来说就是 onStateChange
       const [subscription, notifyNestedSubs] = useMemo(() => {
         if (!shouldHandleStateChanges) return NO_SUBSCRIPTION_ARRAY
 
         // This Subscription's source should match where store came from: props vs. context. A component
         // connected to the store via props shouldn't use subscription from context, or vice versa.
+        // 这又是事件的一环，这整个就是在实现event机制，双向链表的实现是不是像冒泡和捕获
         const subscription = new Subscription(
           store,
           didStoreComeFromProps ? null : contextValue.subscription
@@ -376,16 +385,19 @@ export default function connectAdvanced(
       ] = useReducer(storeStateUpdatesReducer, EMPTY_ARRAY, initStateUpdates)
 
       // Propagate any mapState/mapDispatch errors upwards
+      // 如果 dispatch({type: , error: }) 就会报错
       if (previousStateUpdateResult && previousStateUpdateResult.error) {
         throw previousStateUpdateResult.error
       }
 
       // Set up refs to coordinate values between the subscription effect and the render logic
       const lastChildProps = useRef()
+      // 这个就是ownProps
       const lastWrapperProps = useRef(wrapperProps)
       const childPropsFromStoreUpdate = useRef()
       const renderIsScheduled = useRef(false)
 
+      // 这是整个 props
       const actualChildProps = usePureOnlyMemo(() => {
         // Tricky logic here:
         // - This render may have been triggered by a Redux store update that produced new child props

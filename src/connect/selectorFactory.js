@@ -32,7 +32,7 @@ export function pureFinalPropsSelectorFactory(
   function handleFirstCall(firstState, firstOwnProps) {
     // store里面的state
     state = firstState
-    // 父组件传给子组件的propse
+    // 父组件传给子组件的props
     ownProps = firstOwnProps
     stateProps = mapStateToProps(state, ownProps)
     dispatchProps = mapDispatchToProps(dispatch, ownProps)
@@ -52,6 +52,7 @@ export function pureFinalPropsSelectorFactory(
     return mergedProps
   }
 
+  // 新的ownProps
   function handleNewProps() {
     if (mapStateToProps.dependsOnOwnProps)
       stateProps = mapStateToProps(state, ownProps)
@@ -86,6 +87,7 @@ export function pureFinalPropsSelectorFactory(
     return mergedProps
   }
 
+  // 这才是真正的mapToProps，这个函数里面会做浅比较，更具不同的修改来更新
   return function pureFinalPropsSelector(nextState, nextOwnProps) {
     return hasRunAtLeastOnce
       ? handleSubsequentCalls(nextState, nextOwnProps)
@@ -104,6 +106,7 @@ export default function finalPropsSelectorFactory(
   dispatch,
   { initMapStateToProps, initMapDispatchToProps, initMergeProps, ...options }
 ) {
+  // 被代理过的mapToProps返回的就是一个 function initMapStateToProps(dispatch, options) {return mapToProps(state/dispatch, ownProps) {}}
   const mapStateToProps = initMapStateToProps(dispatch, options)
   const mapDispatchToProps = initMapDispatchToProps(dispatch, options)
   const mergeProps = initMergeProps(dispatch, options)
