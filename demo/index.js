@@ -1,6 +1,7 @@
 import ReactDOM from 'react-dom'
 import React, { useEffect } from 'react'
-import { Provider, connect } from '../src/index'
+// import { Provider, connect } from '../src/index'
+import { Provider, connect } from '../copyReactRedux'
 import store, { actions } from './store'
 
 class AppWrapped extends React.Component {

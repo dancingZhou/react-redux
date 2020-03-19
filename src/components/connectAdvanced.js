@@ -289,6 +289,7 @@ export default function connectAdvanced(
     // ANWSER: 下面的这个props就是wraped的props
     function ConnectFunction(props) {
       // 解构出本来组件的props，过滤出 forwardedRef 这是自己注入进去的
+      // 这里传进来的ref只能通过forwardedRef这样的名字，不能是ref这样的，因为函数组件没有ref
       const [propsContext, forwardedRef, wrapperProps] = useMemo(() => {
         // Distinguish between actual "data" props that were passed to the wrapper component,
         // and values needed to control behavior (forwarded refs, alternate context instances).
@@ -468,6 +469,8 @@ export default function connectAdvanced(
 
       // Now that all that's done, we can finally try to actually render the child component.
       // We memoize the elements for the rendered child component as an optimization.
+      // QUESTION 这里是怎么保证WrappedComponent是class组件的
+      // ANSWER 获取组件的ref是用户自己的行为，我只是透传给用户的组件，所以是否是class组件我管不着啊
       const renderedWrappedComponent = useMemo(
         () => <WrappedComponent {...actualChildProps} ref={forwardedRef} />,
         [forwardedRef, WrappedComponent, actualChildProps]
