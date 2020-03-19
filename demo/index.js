@@ -1,18 +1,26 @@
 import ReactDOM from 'react-dom'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Provider, connect } from '../src/index'
 import store, { actions } from './store'
 
-function _App(props) {
+class AppWrapped extends React.Component {
 
-  function handleClick() {
-    props.add(props.val + 1)
+  constructor(props) {
+    super(props)
+    this.handleClick = this.handleClick.bind(this)
   }
 
-  return <div onClick={handleClick}>
-    增加
-    <div>{props.val}</div>
-  </div>
+  handleClick() {
+    this.props.add(this.props.val + 1)
+  }
+
+  render() {
+    return <div onClick={this.handleClick}>
+      增加
+      <div>{this.props.val}</div>
+    </div>
+  }
+  
 }
 
 function mapStateToProps(state) {
@@ -33,8 +41,18 @@ function mapDispatchToProps(dispatch) {
 
 }
 
-const App = connect(mapStateToProps, mapDispatchToProps)(_App)
+const App = connect(mapStateToProps, mapDispatchToProps, undefined, {forwardRef: true})(AppWrapped)
+
+const ref = React.createRef()
+
+function Wrapper() {
+  useEffect(() => {
+    console.log("我是原组件AppWrapped的ref", ref.current)
+  })
+
+  return <App ref={ref} />
+}
 
 ReactDOM.render(<Provider store={store}>
-  <App />
+  <Wrapper />
 </Provider>, document.querySelector('#root'))

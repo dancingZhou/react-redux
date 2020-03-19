@@ -1,3 +1,7 @@
+// 测试
+import './utils/Subscription.demo'
+// 测试end
+
 import Provider from './components/Provider'
 import connectAdvanced from './components/connectAdvanced'
 import { ReactReduxContext } from './components/Context'

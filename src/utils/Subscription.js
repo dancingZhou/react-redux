@@ -7,6 +7,10 @@ import { getBatch } from './batch'
 // 这是一个接口的性质，表明了createListenerCollection的返回值类型
 const nullListeners = { notify() {} }
 
+// 这是一个事件模型 的一部分（处理一个节点上多个监听事件）
+// 事项的方法是双向链表
+// 监听的时候就是在双向链表尾端加一个 然后 notify 就是执行链表上所有的 callback
+
 function createListenerCollection() {
   const batch = getBatch()
   // 因为是双向链表所以从头和从尾都可以遍历，这里就存了两个指针
@@ -94,6 +98,7 @@ function createListenerCollection() {
 }
 
 // 这个类的对象不仅会作为 响应 者，还会作为时间的触发者
+// 这就是事件链中的一个节点
 export default class Subscription {
   // 这两个入参都是当前Subscription的监听对象
   // 所以这两个被监听的对象都实现了同样的接口，subscribe 然后返回一个函数 unsubscribe
@@ -131,6 +136,7 @@ export default class Subscription {
     // QUESTION
     // 这个onStateChange 看样子是后期注入的？
     // 监听的事件发生之后触发回调 onStateChage
+    // ANWSER: 是的
     if (this.onStateChange) {
       this.onStateChange()
     }

@@ -8,11 +8,16 @@ export function defaultMergeProps(stateProps, dispatchProps, ownProps) {
   return { ...ownProps, ...stateProps, ...dispatchProps }
 }
 
+// 整个思想可以说是依赖注入
 export function wrapMergePropsFunc(mergeProps) {
   return function initMergePropsProxy(
     dispatch,
     { displayName, pure, areMergedPropsEqual }
   ) {
+    // 整个组件的props也被缓存了
+    // 并且是否是首次处理的判断很明确，用了一个变量完成 hasRunOnce
+    // 整个框架中这是第二个需要区别是否首次调用的地方
+    // 第一个地方是 wrapMapToProps 方法的实现
     let hasRunOnce = false
     let mergedProps
 

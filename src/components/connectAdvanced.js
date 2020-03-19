@@ -50,6 +50,7 @@ function captureWrapperProps(
 
   // If the render was from a store update, clear out that reference and cascade the subscriber update
   // 如果子元素来自store的props更新了，就发送消息
+  // QUESTION 这个消息的发送代表什么？
   if (childPropsFromStoreUpdate.current) {
     childPropsFromStoreUpdate.current = null
     notifyNestedSubs()
@@ -104,8 +105,11 @@ function subscribeUpdates(
     }
 
     // If the child props haven't changed, nothing to do here - cascade the subscription update
+    // 显然这里什么都没做
     if (newChildProps === lastChildProps.current) {
       if (!renderIsScheduled.current) {
+        // QUESTION: 为什么这里要通知监听者？通知有什么意义？难道这整个就是事件的一环？
+        // QUESTION: 什么是级联订阅更新?
         notifyNestedSubs()
       }
     } else {
@@ -114,20 +118,23 @@ function subscribeUpdates(
       // been processed.  If this went into useState/useReducer, we couldn't clear out the value without
       // forcing another re-render, which we don't want.
       lastChildProps.current = newChildProps
+      // 这里存的也是全部的 props
       childPropsFromStoreUpdate.current = newChildProps
+      // QUESTION 将要渲染的意思？
       renderIsScheduled.current = true
 
       // If the child props _did_ change (or we caught an error), this wrapper component needs to re-render
       forceComponentUpdateDispatch({
         type: 'STORE_UPDATED',
         payload: {
-          error
+          error // 没有发生错误的时候这个是undefined
         }
       })
     }
   }
 
   // Actually subscribe to the nearest connected ancestor (or store)
+  // store 被dispatch这个方法就会执行
   subscription.onStateChange = checkForUpdates
   subscription.trySubscribe()
 
@@ -268,6 +275,7 @@ export default function connectAdvanced(
     const { pure } = connectOptions
 
     function createChildSelector(store) {
+      // 获取一个用于获取props的函数
       return selectorFactory(store.dispatch, selectorFactoryOptions)
     }
 
@@ -280,6 +288,7 @@ export default function connectAdvanced(
     // QUESTION: 怎么获取wraped的props
     // ANWSER: 下面的这个props就是wraped的props
     function ConnectFunction(props) {
+      // 解构出本来组件的props，过滤出 forwardedRef 这是自己注入进去的
       const [propsContext, forwardedRef, wrapperProps] = useMemo(() => {
         // Distinguish between actual "data" props that were passed to the wrapper component,
         // and values needed to control behavior (forwarded refs, alternate context instances).
@@ -379,6 +388,7 @@ export default function connectAdvanced(
 
       // We need to force this wrapper component to re-render whenever a Redux store update
       // causes a change to the calculated child component props (or we caught an error in mapState)
+      // 第一个参数是dispatch的payload，如果payload了error则会把这个error抛出来
       const [
         [previousStateUpdateResult],
         forceComponentUpdateDispatch
@@ -391,13 +401,17 @@ export default function connectAdvanced(
       }
 
       // Set up refs to coordinate values between the subscription effect and the render logic
+      // QUESTION: 这里为什么要缓存这些信息？childSelector中不是有缓存吗？
+      // 缓存最近的子元素所有props
       const lastChildProps = useRef()
-      // 这个就是ownProps
+      // 这个就是ownProps，缓存
       const lastWrapperProps = useRef(wrapperProps)
+      // 缓存一下
       const childPropsFromStoreUpdate = useRef()
       const renderIsScheduled = useRef(false)
 
-      // 这是整个 props
+      // 这是整个 props 如果是pure那么就会焕春
+      // 每dispatch一次 previousStateUpdateResult 这个变量一定会变
       const actualChildProps = usePureOnlyMemo(() => {
         // Tricky logic here:
         // - This render may have been triggered by a Redux store update that produced new child props
@@ -409,6 +423,7 @@ export default function connectAdvanced(
           childPropsFromStoreUpdate.current &&
           wrapperProps === lastWrapperProps.current
         ) {
+          // QUESTION 为什么会返回这个？
           return childPropsFromStoreUpdate.current
         }
 
@@ -445,6 +460,7 @@ export default function connectAdvanced(
           renderIsScheduled,
           childPropsFromStoreUpdate,
           notifyNestedSubs,
+          // 监听store改变更新当前组件
           forceComponentUpdateDispatch
         ],
         [store, subscription, childPropsSelector]
@@ -488,6 +504,7 @@ export default function connectAdvanced(
 
     // React.forwardRef 会将ref和props分开作为函数组件额第二个参数传入
     // 这样就能跨组件，获取子组件的子组件的实例
+    // 是否需要forwardRef?
     if (forwardRef) {
       const forwarded = React.forwardRef(function forwardConnectRef(
         props,
@@ -505,3 +522,7 @@ export default function connectAdvanced(
     return hoistStatics(Connect, WrappedComponent)
   }
 }
+
+
+
+

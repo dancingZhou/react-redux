@@ -49,6 +49,7 @@ function strictEqual(a, b) {
 // createConnect with default args builds the 'official' connect behavior. Calling it with
 // different options opens up some testing and extensibility scenarios
 export function createConnect({
+  // 注入一些默认的配置
   connectHOC = connectAdvanced,
   // 列举了入参形式 function miss
   mapStateToPropsFactories = defaultMapStateToPropsFactories,
@@ -59,6 +60,7 @@ export function createConnect({
   selectorFactory = defaultSelectorFactory
 } = {}) {
   // connect 一共有四个参数，常用的有两个
+  // 这就是我们调用的connect方法
   return function connect(
     mapStateToProps,
     mapDispatchToProps,
