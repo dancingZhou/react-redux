@@ -1,7 +1,7 @@
 import ReactDOM from 'react-dom'
 import React, { useEffect } from 'react'
-// import { Provider, connect } from '../src/index'
-import { Provider, connect } from '../copyReactRedux'
+import { Provider, connect } from '../src/index'
+// import { Provider, connect } from '../copyReactRedux'
 import store, { actions } from './store'
 
 class AppWrapped extends React.Component {
@@ -9,6 +9,7 @@ class AppWrapped extends React.Component {
   constructor(props) {
     super(props)
     this.handleClick = this.handleClick.bind(this)
+    this.i = 0
   }
 
   handleClick() {
@@ -16,9 +17,13 @@ class AppWrapped extends React.Component {
   }
 
   render() {
-    return <div onClick={this.handleClick}>
-      增加
-      <div>{this.props.val}</div>
+    console.log('渲染了' + this.i++ + '次')
+    return <div>
+        <div onClick={() => this.props.updateOtherInfo('zzzzzzz')}>修改</div>
+        <div onClick={this.handleClick}>
+        增加
+        <div>{this.props.val}</div>
+      </div>
     </div>
   }
   
@@ -37,6 +42,9 @@ function mapDispatchToProps(dispatch) {
   return {
     add(payload) {
       dispatch(actions.add(payload))
+    },
+    updateOtherInfo(payload) {
+      dispatch(actions.updateOtherInfo(payload))
     }
   }
 

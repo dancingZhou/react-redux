@@ -162,6 +162,7 @@ function subscribeUpdates(
 
 const initStateUpdates = () => [null, 0]
 
+// 组件的更新，不只有state的更新，还有父组件的props更新
 export default function connectAdvanced(
   /*
     selectorFactory is a func that is responsible for returning the selector function used to
@@ -407,7 +408,7 @@ export default function connectAdvanced(
       const lastChildProps = useRef()
       // 这个就是ownProps，缓存
       const lastWrapperProps = useRef(wrapperProps)
-      // 缓存一下
+      // 缓存一下 这也是子元素所有的props
       const childPropsFromStoreUpdate = useRef()
       const renderIsScheduled = useRef(false)
 
