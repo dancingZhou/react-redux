@@ -124,13 +124,11 @@ export default (mapStateToProps, mapDispatchToProps, mergeProps,
 
       cacheAllProps.current = allProps
 
-      let ArapperedComponent = (props) => {
-        return <WrapperedComponent ref={forwardedRef} {...props} />
-      }
-      if (pure) {
-        ArapperedComponent = React.memo(ArapperedComponent)
-      }
-      return <ArapperedComponent {...allProps}  />
+      let ArapperedComponent = useMemo(() => {
+        return <WrapperedComponent ref={forwardedRef} {...allProps} />
+      }, [allProps])
+
+      return ArapperedComponent
     }
 
     // 这里包一层是为了获取外面传进来的 ref，默认情况下子元素是没有机会处理ref属性的
