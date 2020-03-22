@@ -111,6 +111,92 @@ mapDispatchToProps(dispatch, props)
 ## connect的pure策略
   - 和pure直接相关的就只有React.memo才对
   - 其实不是的，如果每次都重新计算的，比如说没有监听的store中的state变化，那么mapToState 和 mapDispatch会重新计算，那么浅比较是通不过的，也就是说React.memo也无能为力
+  - 为什么浅比较通不过？mapDispatchToProps是通不过的，因为主要注入function，每次重新计算都会生成新的函数
 
+### 纯函数实现的根本
+
+引起组件变更的因素有
+
+ownProps store.getState()
+
+mapStateToProps mapDispatchToProps
+
+整个组件的props来源有 ownProps mapStateToProps的返回值，mapDispatchToProps的返回值
+
+其中mapStateToProps和mapDispatchToProps的返回值直接依赖store.getState，可能依赖ownProps。
+
+会变化的有store的state，ownProps
+
+store被需要的部分，和不被当前组件需要的部分，还有ownProps
+
+其中不应该引起变化的有：
+
+不被监听的store中state的变化
+
+不依赖ownProps的mapState和mapDispatch中ownProps的变化
+
+也有什么都没变，却被重新渲染。父组件的render重新执行
+
+导致不必要变化的体现：
+
+上面不被需要的信息的变化会引起 mapStateToProps重新计算，直接导致重新计算后的值无法通过浅比较，例如return {a: {}} 从新计算a的值一定会变化。何况是mapDispatch，返回的主要是函数。
+
+如何避免？
+
+做到上面值变化的时候allProps不要变化
+
+检测mapToState和mapToDispatch是否依赖ownProps，如果不依赖只有ownProps变化的时候不要重新计算
+
+所以需要区别是否只有ownProps变化
+
+为什么要区分是否依赖ownProps，即使不依赖ownProps，props变化的时候整个组件也是需要重新渲染的，区别就是这个props是否会影响子元素
+
+store中其他state变化是不会影响到当前state变化的，所以可以通过钱比较判断 state
+
+现在主要原因是不依赖的store的变化直接引起mapState和mapDispatch的重新计算，从而导致通不过浅比较
+
+## 具体实现方法
+
+有三个变化，父元素render、store的state、ownprops
+
+父元素的render 没涉及当前组件的变化
+
+store 没涉及当前组件的变化
+
+ownprops总会变化
+
+入参 state ownProps 总是会变化的
+
+state的变化用强比较, ownProps用前比较
+
+mapStateToProps的返回值被缓存，用作比较
+
+mapDispatchToProps 的返回值比较没意义啊
+
+所以值分为三个部分，被注入，也分别被缓存
+
+因为所有数据都来自两部分，一个是store，一个是ownProps
+
+首先判断 store是否改变和ownProps是否改变
+
+还是两个都改变了
+
+1 store变了 重新根据 mapStateToProps重新计算 其他不动
+
+2 ownProps变了 
+
+mapStateToProps
+分为是否监听ownProps
+
+如果监听ownProps 只有props的时候也要重新计算
+
+如果不监听，则只有props变的时候不需要计算
+
+mapDispatchToProps同理
+
+3 都变了，上面的事情都要做
+
+
+可以省略的变更有
 
 # step3 实现forwdRef功能

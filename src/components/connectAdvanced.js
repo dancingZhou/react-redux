@@ -501,7 +501,7 @@ export default function connectAdvanced(
     
     // QUESTION: React.memo() 这有啥用？每次都不还是新的？没有记忆作用
     // ANWSER: useMemo才会每次返回新值，搞混了，这个和PrueComponent一个意思
-    const Connect = pure ? React.memo(ConnectFunction) : ConnectFunction
+    const Connect = ConnectFunction// pure ? React.memo(ConnectFunction) : ConnectFunction
 
     Connect.WrappedComponent = WrappedComponent
     Connect.displayName = displayName

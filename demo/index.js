@@ -1,9 +1,9 @@
 import ReactDOM from 'react-dom'
 import React, { useEffect } from 'react'
-import { Provider, connect } from '../src/index'
-// import { Provider, connect } from '../copyReactRedux'
+// import { Provider, connect } from '../src/index'
+import { Provider, connect } from '../copyReactRedux'
 import store, { actions } from './store'
-
+window.i = 0
 class AppWrapped extends React.Component {
 
   constructor(props) {
@@ -11,13 +11,17 @@ class AppWrapped extends React.Component {
     this.handleClick = this.handleClick.bind(this)
     this.i = 0
   }
+  
+  componentDidMount() {
+    console.log('zzzz')
+  }
 
   handleClick() {
     this.props.add(this.props.val + 1)
   }
 
   render() {
-    console.log('渲染了' + this.i++ + '次')
+    console.log('渲染了' + (this.i++) + '次')
     return <div>
         <div onClick={() => this.props.updateOtherInfo('zzzzzzz')}>修改</div>
         <div onClick={this.handleClick}>

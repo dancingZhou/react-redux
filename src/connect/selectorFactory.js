@@ -41,6 +41,7 @@ export function pureFinalPropsSelectorFactory(
     return mergedProps
   }
 
+  // props 都更新了所以没比较检测是否stateProps没有更新了
   function handleNewPropsAndNewState() {
     stateProps = mapStateToProps(state, ownProps)
 
@@ -64,6 +65,7 @@ export function pureFinalPropsSelectorFactory(
     return mergedProps
   }
 
+  // 分为两种情况，一种是该组件没有订阅这个state，一种是确实订阅了这个state
   function handleNewState() {
     const nextStateProps = mapStateToProps(state, ownProps)
     const statePropsChanged = !areStatePropsEqual(nextStateProps, stateProps)
